@@ -1,0 +1,6 @@
+{"common": {
+    "batch_size": 16,
+    "input_size": 224,
+    "resize_before_crop": 224
+  }
+}

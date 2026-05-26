@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RetrievalWindow</class>
+ <widget class="QWidget" name="RetrievalWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1200</width>
+    <height>900</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Image Retrieval</string>
+  </property>
+
+  <layout class="QVBoxLayout" name="verticalLayoutMain">
+
+   <!-- Load Project Section -->
+   <item>
+    <widget class="QGroupBox" name="groupLoadProject">
+     <property name="title">
+      <string>Load Project</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayoutLoad">
+      <item>
+       <widget class="QLabel" name="labelProjectPath">
+        <property name="text">
+         <string>Project Path：</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="line_project_path">
+        <property name="placeholderText">
+         <string>Select existing project folder...</string>
+        </property>
+
+        <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+        </property>
+
+
+
+
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_load">
+        <property name="text">
+         <string>Load</string>
+        </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>30</height>
+           </size>
+          </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Query Image Section -->
+   <item>
+    <widget class="QGroupBox" name="groupQueryImage">
+     <property name="title">
+      <string>Query Image</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayoutQuery">
+      <item>
+       <widget class="QLabel" name="labelQueryPath">
+        <property name="text">
+         <string>Image Path：</string>
+        </property>
+
+
+
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="line_image_path">
+        <property name="placeholderText">
+         <string>Select query image...</string>
+        </property>
+        <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+        </property>
+
+
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_open_image">
+        <property name="text">
+         <string>Open</string>
+        </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>30</height>
+           </size>
+          </property>
+
+
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Retrieval Settings -->
+   <item>
+    <widget class="QGroupBox" name="groupSettings">
+     <property name="title">
+      <string>Retrieval Settings</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayoutSettings">
+      <item>
+       <widget class="QLabel" name="labelTopK">
+        <property name="text">
+         <string>Top K：</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="combo_topk">
+        <item>
+         <property name="text">
+          <string>5</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>10</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>20</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>50</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacerSettings">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelMethod">
+        <property name="text">
+         <string>Method：</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="combo_method">
+        <item>
+         <property name="text">
+          <string>avgpool_2048</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>layer4_gem_2048</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Action Buttons -->
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayoutButtons">
+     <item>
+      <spacer name="horizontalSpacerButtons">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_start_retrieval">
+       <property name="text">
+        <string>Start Retrieval</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>40</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacerButtons2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Results Display Section -->
+   <item>
+    <widget class="QGroupBox" name="groupResults">
+     <property name="title">
+      <string>Retrieval Results</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayoutResults">
+
+      <!-- Query Image Display -->
+      <item>
+       <widget class="QGroupBox" name="groupQueryDisplay">
+        <property name="title">
+         <string>Query Image</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayoutQuery">
+         <item>
+          <widget class="QLabel" name="label_query_image">
+           <property name="minimumSize">
+            <size>
+             <width>300</width>
+             <height>300</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>400</width>
+             <height>400</height>
+            </size>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::Box</enum>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="text">
+            <string>Query Image will appear here</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+
+      <!-- Retrieved Images Display -->
+      <item>
+       <widget class="QGroupBox" name="groupRetrieved">
+        <property name="title">
+         <string>Top 5 Similar Images</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayoutRetrieved">
+         <item>
+          <widget class="QScrollArea" name="scroll_area_results">
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>800</width>
+              <height>400</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayoutRetrievedImages">
+             <!-- 动态添加图片到这里 -->
+             <item>
+              <widget class="QFrame" name="frame_result_1">
+               <property name="frameShape">
+                <enum>QFrame::Box</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayoutResult1">
+                <item>
+                 <widget class="QLabel" name="label_result_1">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>200</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>250</width>
+                    <height>250</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="text">
+                   <string>Result 1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_score_1">
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="text">
+                   <string>Similarity: --</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QFrame" name="frame_result_2">
+               <property name="frameShape">
+                <enum>QFrame::Box</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayoutResult2">
+                <item>
+                 <widget class="QLabel" name="label_result_2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>200</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>250</width>
+                    <height>250</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="text">
+                   <string>Result 2</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_score_2">
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="text">
+                   <string>Similarity: --</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QFrame" name="frame_result_3">
+               <property name="frameShape">
+                <enum>QFrame::Box</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayoutResult3">
+                <item>
+                 <widget class="QLabel" name="label_result_3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>200</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>250</width>
+                    <height>250</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="text">
+                   <string>Result 3</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_score_3">
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="text">
+                   <string>Similarity: --</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QFrame" name="frame_result_4">
+               <property name="frameShape">
+                <enum>QFrame::Box</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayoutResult4">
+                <item>
+                 <widget class="QLabel" name="label_result_4">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>200</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>250</width>
+                    <height>250</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="text">
+                   <string>Result 4</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_score_4">
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="text">
+                   <string>Similarity: --</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QFrame" name="frame_result_5">
+               <property name="frameShape">
+                <enum>QFrame::Box</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayoutResult5">
+                <item>
+                 <widget class="QLabel" name="label_result_5">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>200</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>250</width>
+                    <height>250</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="text">
+                   <string>Result 5</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_score_5">
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="text">
+                   <string>Similarity: --</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Log Section (已移到底部，并解除高度限制) -->
+   <item>
+    <widget class="QGroupBox" name="groupLog">
+     <property name="title">
+      <string>Log</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutLog">
+      <item>
+       <widget class="QTextEdit" name="text_log">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>80</height>
+         </size>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

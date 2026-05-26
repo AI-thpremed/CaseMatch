@@ -1,0 +1,47 @@
+{
+  "models": [
+    {
+      "name": "resnet50_imagenet",
+      "display_name": "ImageNet Pretrained ResNet50",
+      "backbone": "ResNet50",
+      "type": "general",
+      "description": "Standard ImageNet-1K pretrained ResNet50 for general purpose feature extraction",
+      "model_path": "CPKs/resnet50_pre.pth",
+      "pretrained_on": "ImageNet-1K",
+      "source": "torchvision"
+    },
+    {
+      "name": "resnet50_dino",
+      "display_name": "DINO Pretrained ResNet50",
+      "backbone": "ResNet50",
+      "type": "self-supervised",
+      "description": "ResNet50 pretrained with DINO (Distillation with no labels) self-supervised learning on ImageNet",
+      "model_path": "CPKs/dino_resnet50_pre.pth",
+      "pretrained_on": "ImageNet-1K-DINO",
+      "source": "facebookresearch"
+    },
+    {
+      "name": "resnet50_endoscopy",
+      "display_name": "Endoscopy Domain ResNet50",
+      "backbone": "ResNet50",
+      "type": "domain-specific",
+      "domain": "endoscopy",
+      "description": "Self-supervised pretrained ResNet50 on endoscopy/colonoscopy images for gastrointestinal imaging",
+      "model_path": "CPKs/GastroNet-5M_resnet50_DINOv1.pth",
+      "pretrained_on": "Endoscopy-SSL-GastroNet-5M",
+      "source": "custom"
+    },
+    {
+      "name": "resnet50_pathology",
+      "display_name": "Pathology Domain ResNet50",
+      "backbone": "ResNet50",
+      "type": "domain-specific",
+      "domain": "pathology",
+      "description": "Clustering-guided contrastive learning for whole-slide image retrieval",
+      "model_path": "CPKs/RetCCL_WSI.pth",
+      "pretrained_on": "Pathology-SSL",
+      "source": "custom"
+    }
+  ],
+  "default_model": "resnet50_imagenet"
+}

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BuildNewProject</class>
+ <widget class="QWidget" name="BuildNewProject">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Build New Project</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+
+   <!-- Project Setting Section -->
+   <item>
+    <widget class="QGroupBox" name="groupProjectSetting">
+     <property name="title">
+      <string>Project Setting</string>
+     </property>
+     <layout class="QFormLayout" name="formLayoutProject">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelProjectName">
+        <property name="text">
+         <string>Project Name：</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="line_project_name">
+        <property name="placeholderText">
+         <string>Enter project name...</string>
+        </property>
+        <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelAlgo">
+        <property name="text">
+         <string>Algorithm：</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="combo_algo"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Image Path Section -->
+   <item>
+    <widget class="QGroupBox" name="groupImagePath">
+     <property name="title">
+      <string>Image Path</string>
+     </property>
+     <layout class="QFormLayout" name="formLayoutImage">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelImgPath">
+        <property name="text">
+         <string>Image Path of New Project：</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLineEdit" name="line_image_path">
+          <property name="placeholderText">
+           <string>Select folder containing images...</string>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_select_path">
+          <property name="text">
+           <string>Open</string>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>30</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Start / Stop Button -->
+   <item>
+    <layout class="QHBoxLayout" name="hLayoutButton">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_start_building">
+       <property name="text">
+        <string>Start Building</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>35</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <!-- ===== 新增：Stop 按钮 ===== -->
+     <item>
+      <widget class="QPushButton" name="btn_stop_building">
+       <property name="text">
+        <string>Stop Building</string>
+       </property>
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>35</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <!-- ========================== -->
+     <item>
+      <spacer name="horizontalSpacer2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Log Section -->
+   <item>
+    <widget class="QGroupBox" name="groupLog">
+     <property name="title">
+      <string>Log</string>
+     </property>
+     <layout class="QVBoxLayout" name="vLayoutLog">
+      <item>
+       <widget class="QTextEdit" name="text_log">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="placeholderText">
+         <string>Building process and summary will be displayed here...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
