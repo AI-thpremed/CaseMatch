@@ -64,9 +64,6 @@ Pyinstaller is recommended for packaging Python applications into standalone exe
 
 These executable files have integrated the required PyTorch versions, so they can be run directly without additional setup.
 
-Instructional Video on Usage Process:
-
-https://drive.google.com/file/d/1-p7K1IG6OEgGaU9eLmwSVV3EhOw0Zb-A/view?usp=sharing
 
 
 ## Rebuild the Software
