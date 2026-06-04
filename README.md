@@ -22,7 +22,7 @@ CaseMatch_V1_0_0_User_Guide.pdf can be found in user_guide folder
 
 ## Software Page
 
-<img src="images/3.1.png" width="500">
+<img src="user_guide/3.1.png" width="500">
 
 
 
