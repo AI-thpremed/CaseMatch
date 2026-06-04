@@ -24,8 +24,28 @@ class TqdmToLog:
     def flush(self):
         pass
 
+def get_app_path():
+    """获取应用程序的根目录（开发环境返回项目目录，打包环境返回exe所在目录）"""
+    if getattr(sys, 'frozen', False):
+        # PyInstaller 打包后，exe 所在目录
+        return Path(sys.executable).parent
+    else:
+        # 开发环境，返回当前文件所在目录的父目录（或项目根目录）
+        return Path(__file__).parent
 
-# F:\0-dataset\polyp\kvasir-v2\kvasir-v2
+
+def safe_write(msg):
+    """安全的控制台写入，在打包后的 GUI 应用中自动禁用"""
+    try:
+        if getattr(sys, 'frozen', False) and (sys.stdout is None or sys.stderr is None):
+            return  # 打包后的 GUI 应用，没有控制台
+        from tqdm import tqdm
+        tqdm.write(msg)
+    except (AttributeError, ImportError, TypeError):
+        # 开发环境也可能没有 tqdm，静默处理
+        pass
+
+
 
 
 def build_project(cfg: dict, log_q):
@@ -38,6 +58,7 @@ def build_project(cfg: dict, log_q):
 
     log_file = None
 
+    # 然后在 log 函数中使用：
     def log(msg, level="INFO"):
         nonlocal log_file
         if msg is None:
@@ -50,7 +71,8 @@ def build_project(cfg: dict, log_q):
         if log_file:
             log_file.write(msg + '\n')
             log_file.flush()
-        tqdm.write(msg)
+
+        safe_write(msg)
 
     start_time = time.time()
 
@@ -66,10 +88,10 @@ def build_project(cfg: dict, log_q):
     cfg['input_size'] = str(input_size)
     cfg['resize_before_crop'] = str(resize_before_crop)
 
+    app_path = get_app_path()
+    root_cache = app_path / 'cache'
+    root_results = app_path / 'results'
 
-
-    root_cache   = Path(__file__).parent / 'cache'
-    root_results = Path(__file__).parent / 'results'
     root_cache.mkdir(exist_ok=True)
     root_results.mkdir(exist_ok=True)
 
@@ -240,18 +262,6 @@ def build_project(cfg: dict, log_q):
             # L2 normalization (prerequisite for cosine similarity retrieval)
             norms = np.linalg.norm(feats, axis=1, keepdims=True)
             feats = feats / (norms + 1e-8)
-
-            # Save
-            # dim = feats.shape[1]  # 2048
-
-            # index = faiss.IndexFlatIP(dim)
-            # t0 = time.time()
-            # index.add(feats)
-            # log(f"add: {time.time() - t0:.2f}s")
-            #
-
-
-            # faiss.write_index(index, str(strategy_dir / 'index.faiss'))
 
             np.save(strategy_dir / 'features.npy', feats)
             with open(strategy_dir / 'image_list.txt', 'w', encoding='utf-8') as f:

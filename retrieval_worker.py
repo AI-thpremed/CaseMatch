@@ -55,14 +55,7 @@ class GradCAM:
         return cam, model_output.detach()
 
 
-# def visualize_cam_on_image(img_pil, cam, alpha=0.5):
-#     img_array = np.array(img_pil)
-#     h, w = img_array.shape[:2]
-#     cam_resized = cv2.resize(cam, (w, h))
-#     heatmap = cv2.applyColorMap(np.uint8(255 * cam_resized), cv2.COLORMAP_JET)
-#     heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
-#     overlay = heatmap * alpha + img_array * (1 - alpha)
-#     return img_array, heatmap, overlay.astype(np.uint8)
+
 
 
 def visualize_cam_on_image(img_pil, cam, alpha=0.5):
@@ -129,6 +122,14 @@ def create_comparison_figure(query_img_path, query_cam, retrieved_info_list, sav
     log(f"Comparison figure saved: {save_path}", "INFO")
 
 
+def get_app_path():
+    """获取应用程序的根目录（开发环境返回项目目录，打包环境返回exe所在目录）"""
+    if getattr(sys, 'frozen', False):
+        # PyInstaller 打包后，exe 所在目录
+        return Path(sys.executable).parent
+    else:
+        # 开发环境，返回当前文件所在目录的父目录（或项目根目录）
+        return Path(__file__).parent
 
 
 # ==================== Core Worker ====================
@@ -164,7 +165,10 @@ def retrieval_worker(
             log_q.put(line)
 
     try:
-        root_results = Path(__file__).parent / 'results'
+
+        app_path = get_app_path()
+        root_results = app_path / 'results'
+
         root_results.mkdir(exist_ok=True)
         start_time = time.time()
 
