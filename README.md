@@ -4,6 +4,9 @@
 
 CaseMatch is a fully open-source, no-code medical image retrieval software built on PySide and vector indexing. It enables clinicians and researchers to rapidly construct, maintain, and query large-scale medical image repositories without any programming background.
 
+
+CaseMatch_V1_0_0_User_Guide.pdf can be found in user_guide folder
+
 ## 🚀 Key Features
 
 - **No-code image library construction**: Build searchable vector databases from local image folders with a single click
@@ -17,6 +20,12 @@ CaseMatch is a fully open-source, no-code medical image retrieval software built
 - **Visualization support**: Grad-CAM / CAM heatmaps to highlight similar anatomical or lesion regions
 - **Offline deployment**: Ready-to-run Windows executable (.exe) available alongside full source code
 
+## Software Page
+
+<img src="images/3.1.png" width="500">
+
+
+
 ## 📊 Performance Highlights
 
 | Modality | Dataset | Images | Classes | Best Top-1 Accuracy |
@@ -29,6 +38,41 @@ CaseMatch is a fully open-source, no-code medical image retrieval software built
 
 ## 🖥️ System Requirements
 
-- **OS**: Windows 10/11 (executable) or Linux/macOS (source)
+- **OS**: Windows 10/11 (executable) or Linux/macOS (source code)
 - **Python**: 3.8+
 - **GPU**: Optional (CPU inference supported)
+
+
+## Cache and Results
+
+- The software stores cache in the `cache` folder.
+- The results of the software are saved in the `results` folder.
+
+## Executable Files
+
+Pyinstaller is recommended for packaging Python applications into standalone executable files.
+
+### CPU Version
+
+- **Google Drive**: [CaseMatch-CPU.zip](https://drive.google.com/file/d/1LVEbkhDWLO7bnf_FKzxAdBeGU_UprQXg/view?usp=drive_link)
+- **Baidu Cloud Disk**: [CaseMatch-CPU.zip](https://pan.baidu.com/s/1M1woUx89gpuRugnNT82OKg) (Extraction Code: urjg)
+
+### GPU Version
+
+- **Google Drive**: [CaseMatch-GPU.zip](https://drive.google.com/file/d/1rE9JDGLW4ZzdM8bqCyZp_DcFt1v4k0cy/view?usp=drive_link)
+- **Baidu Cloud Disk**: [CaseMatch-GPU.zip](https://pan.baidu.com/s/1U7RiofvaGwWR88x2GYxIHA) (Extraction Code: ym89)
+
+These executable files have integrated the required PyTorch versions, so they can be run directly without additional setup.
+
+Instructional Video on Usage Process:
+
+https://drive.google.com/file/d/1-p7K1IG6OEgGaU9eLmwSVV3EhOw0Zb-A/view?usp=sharing
+
+
+## Rebuild the Software
+
+use pyinstaller to build the exe Software
+
+
+
+
