@@ -1,4 +1,6 @@
-# CaseMatch
+# CaseMatch, An open-source content-based image retrieval (CBIR) tool for medical imaging
+
+
 
 **An open-source content-based image retrieval (CBIR) tool for medical imaging**
 
