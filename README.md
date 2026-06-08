@@ -67,6 +67,16 @@ Pyinstaller is recommended for packaging Python applications into standalone exe
 These executable files have integrated the required PyTorch versions, so they can be run directly without additional setup.
 
 
+## Datasets
+
+
+
+Kvasir-V2:
+https://www.kaggle.com/datasets/plhalvorsen/kvasir-v2-a-gastrointestinal-tract-dataset
+HAM10000:
+https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000
+NCT-CRC-HE-100K:
+https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000
 
 ## Rebuild the Software
 
