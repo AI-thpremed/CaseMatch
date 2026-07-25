@@ -57,12 +57,12 @@ Pyinstaller is recommended for packaging Python applications into standalone exe
 ### CPU Version
 
 - **Google Drive**: [CaseMatch-CPU.zip](https://drive.google.com/file/d/1XbSzdqNmmHq6-VaY-QauspS313LdVr8m/view?usp=drive_link)
-- **Baidu Cloud Disk**: [CaseMatch-CPU.zip](https://pan.baidu.com/s/1M1woUx89gpuRugnNT82OKg) (Extraction Code: urjg)
+- **Baidu Cloud Disk**: [CaseMatch-CPU.zip](https://pan.baidu.com/s/1z1vB8896zcNSd4Agnq_0UQ?pwd=7t6g) (Extraction Code: 7t6g)
 
 ### GPU Version
 
 - **Google Drive**: [CaseMatch-GPU.zip](https://drive.google.com/file/d/1_OEoHSsX1PFo1utH4mtEOHZtKKGcIcHJ/view?usp=sharing)
-- **Baidu Cloud Disk**: [CaseMatch-GPU.zip](https://pan.baidu.com/s/1U7RiofvaGwWR88x2GYxIHA) (Extraction Code: ym89)
+- **Baidu Cloud Disk**: [CaseMatch-GPU.zip](https://pan.baidu.com/s/1wZeAVNrbtmY887I3TP63HQ?pwd=zv1f) (Extraction Code: zv1f)
 
 These executable files have integrated the required PyTorch versions, so they can be run directly without additional setup.
 
