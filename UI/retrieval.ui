@@ -35,17 +35,12 @@
         <property name="placeholderText">
          <string>Select existing project folder...</string>
         </property>
-
         <property name="minimumSize">
             <size>
              <width>0</width>
              <height>30</height>
             </size>
         </property>
-
-
-
-
        </widget>
       </item>
       <item>
@@ -77,9 +72,6 @@
         <property name="text">
          <string>Image Path：</string>
         </property>
-
-
-
        </widget>
       </item>
       <item>
@@ -93,8 +85,6 @@
              <height>30</height>
             </size>
         </property>
-
-
        </widget>
       </item>
       <item>
@@ -108,8 +98,6 @@
             <height>30</height>
            </size>
           </property>
-
-
        </widget>
       </item>
      </layout>
@@ -180,6 +168,27 @@
           <string>layer4_gem_2048</string>
          </property>
         </item>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacerSettings2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </spacer>
+      </item>
+      <!-- NEW: GradCAM Toggle -->
+      <item>
+       <widget class="QCheckBox" name="check_gradcam">
+        <property name="text">
+         <string>Enable GradCAM</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Enable GradCAM visualization (slower). Disable for fast retrieval.</string>
+        </property>
        </widget>
       </item>
      </layout>
@@ -285,7 +294,6 @@
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayoutRetrievedImages">
-             <!-- 动态添加图片到这里 -->
              <item>
               <widget class="QFrame" name="frame_result_1">
                <property name="frameShape">
@@ -502,7 +510,7 @@
     </widget>
    </item>
 
-   <!-- Log Section (已移到底部，并解除高度限制) -->
+   <!-- Log Section -->
    <item>
     <widget class="QGroupBox" name="groupLog">
      <property name="title">

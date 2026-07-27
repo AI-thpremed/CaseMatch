@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'retrieval.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.1
+## Created by: Qt User Interface Compiler version 6.10.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QGroupBox,
-    QHBoxLayout, QLabel, QLineEdit, QPushButton,
-    QScrollArea, QSizePolicy, QSpacerItem, QTextEdit,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFrame,
+    QGroupBox, QHBoxLayout, QLabel, QLineEdit,
+    QPushButton, QScrollArea, QSizePolicy, QSpacerItem,
+    QTextEdit, QVBoxLayout, QWidget)
 
 class Ui_RetrievalWindow(object):
     def setupUi(self, RetrievalWindow):
@@ -108,6 +108,16 @@ class Ui_RetrievalWindow(object):
         self.combo_method.setObjectName(u"combo_method")
 
         self.horizontalLayoutSettings.addWidget(self.combo_method)
+
+        self.horizontalSpacerSettings2 = QSpacerItem(0, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayoutSettings.addItem(self.horizontalSpacerSettings2)
+
+        self.check_gradcam = QCheckBox(self.groupSettings)
+        self.check_gradcam.setObjectName(u"check_gradcam")
+        self.check_gradcam.setChecked(False)
+
+        self.horizontalLayoutSettings.addWidget(self.check_gradcam)
 
 
         self.verticalLayoutMain.addWidget(self.groupSettings)
@@ -329,6 +339,10 @@ class Ui_RetrievalWindow(object):
         self.combo_method.setItemText(0, QCoreApplication.translate("RetrievalWindow", u"avgpool_2048", None))
         self.combo_method.setItemText(1, QCoreApplication.translate("RetrievalWindow", u"layer4_gem_2048", None))
 
+        self.check_gradcam.setText(QCoreApplication.translate("RetrievalWindow", u"Enable GradCAM", None))
+#if QT_CONFIG(tooltip)
+        self.check_gradcam.setToolTip(QCoreApplication.translate("RetrievalWindow", u"Enable GradCAM visualization (slower). Disable for fast retrieval.", None))
+#endif // QT_CONFIG(tooltip)
         self.btn_start_retrieval.setText(QCoreApplication.translate("RetrievalWindow", u"Start Retrieval", None))
         self.groupResults.setTitle(QCoreApplication.translate("RetrievalWindow", u"Retrieval Results", None))
         self.groupQueryDisplay.setTitle(QCoreApplication.translate("RetrievalWindow", u"Query Image", None))

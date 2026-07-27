@@ -18,6 +18,50 @@ import time
 from models.resnet import resnet50
 import pandas as pd
 import shutil
+
+
+# ==================== Vector Cache ====================
+class VectorCache:
+    """Singleton cache for preloaded vectors to avoid repeated disk I/O."""
+    _cache = {}
+
+    @classmethod
+    def get(cls, project_path: str, strategy_name: str):
+        key = f"{project_path}::{strategy_name}"
+        return cls._cache.get(key, None)
+
+    @classmethod
+    def set(cls, project_path: str, strategy_name: str, features, paths, norms):
+        key = f"{project_path}::{strategy_name}"
+        cls._cache[key] = (features, paths, norms)
+
+    @classmethod
+    def invalidate(cls, project_path: str = None):
+        if project_path is None:
+            cls._cache.clear()
+        else:
+            keys_to_del = [k for k in cls._cache if k.startswith(f"{project_path}::")]
+            for k in keys_to_del:
+                del cls._cache[k]
+
+    @classmethod
+    def preload(cls, project_path: str, strategy_name: str, feat_file: str, list_file: str):
+        t0 = time.time()
+        features = np.load(feat_file).astype(np.float32)
+        norms = np.linalg.norm(features, axis=1, keepdims=True)
+        features_normed = features / (norms + 1e-8)
+
+        with open(list_file, 'r', encoding='utf-8') as f:
+            paths = [line.strip() for line in f if line.strip()]
+
+        if len(features_normed) != len(paths):
+            raise ValueError(f"Feature count ({len(features_normed)}) != path count ({len(paths)})")
+
+        cls.set(project_path, strategy_name, features_normed, paths, norms.flatten())
+        load_time = time.time() - t0
+        return load_time, len(paths), features_normed.shape[1]
+
+
 # ==================== GradCAM ====================
 class GradCAM:
     def __init__(self, model, target_layer):
@@ -55,14 +99,9 @@ class GradCAM:
         return cam, model_output.detach()
 
 
-
-
-
 def visualize_cam_on_image(img_pil, cam, alpha=0.5):
-
     if img_pil.mode != 'RGB':
         img_pil = img_pil.convert('RGB')
-
     img_array = np.array(img_pil)
     h, w = img_array.shape[:2]
     cam_resized = cv2.resize(cam, (w, h))
@@ -70,6 +109,7 @@ def visualize_cam_on_image(img_pil, cam, alpha=0.5):
     heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
     overlay = heatmap * alpha + img_array * (1 - alpha)
     return img_array, heatmap, overlay.astype(np.uint8)
+
 
 def create_comparison_figure(query_img_path, query_cam, retrieved_info_list, save_path, log_callback=None):
     log = log_callback or (lambda m, l="INFO": None)
@@ -101,7 +141,6 @@ def create_comparison_figure(query_img_path, query_cam, retrieved_info_list, sav
             img = Image.open(img_path)
             if img.mode != 'RGB':
                 img = img.convert('RGB')
-
             _, _, overlay = visualize_cam_on_image(img, cam, alpha=0.5)
             row = idx + 1
             axes[row, 0].imshow(img)
@@ -122,29 +161,15 @@ def create_comparison_figure(query_img_path, query_cam, retrieved_info_list, sav
     log(f"Comparison figure saved: {save_path}", "INFO")
 
 
-def get_app_path():
-    """获取应用程序的根目录（开发环境返回项目目录，打包环境返回exe所在目录）"""
-    if getattr(sys, 'frozen', False):
-        # PyInstaller 打包后，exe 所在目录
-        return Path(sys.executable).parent
-    else:
-        # 开发环境，返回当前文件所在目录的父目录（或项目根目录）
-        return Path(__file__).parent
-
-
-# ==================== Core Worker ====================
+# ==================== Core Worker (with GradCAM toggle) ====================
 def retrieval_worker(
     project_path: str,
     query_image_path: str,
     top_k: int,
     strategy_name: str,
+    enable_gradcam: bool,
     log_q
 ) -> List[Tuple[str, float, Optional[str]]]:
-    """
-    Dual-strategy retrieval Worker.
-    strategy_name: avgpool_2048 | layer4_gem_2048
-    """
-
     assert strategy_name in ('avgpool_2048', 'layer4_gem_2048'), f"Invalid strategy: {strategy_name}"
 
     log_file = None
@@ -165,19 +190,14 @@ def retrieval_worker(
             log_q.put(line)
 
     try:
-
-        app_path = get_app_path()
-        root_results = app_path / 'results'
-
+        root_results = Path(__file__).parent / 'results'
         root_results.mkdir(exist_ok=True)
         start_time = time.time()
-
 
         proj = Path(project_path)
         timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
         res_dir = root_results / f'retrieval_{timestamp}'
         res_dir.mkdir(exist_ok=True)
-
 
         query_src = Path(query_image_path)
         shutil.copy2(query_src, res_dir / f"input_image{query_src.suffix}")
@@ -187,7 +207,7 @@ def retrieval_worker(
 
         log("=" * 50)
         log(f"Source Project: {project_path}")
-        log(f"Starting retrieval | Strategy: {strategy_name} | Top-K: {top_k}")
+        log(f"Starting retrieval | Strategy: {strategy_name} | Top-K: {top_k} | GradCAM: {enable_gradcam}")
         log(f"Query image: {query_image_path}")
 
         # 1. Read manifest
@@ -210,27 +230,37 @@ def retrieval_worker(
         if not os.path.exists(list_file):
             raise FileNotFoundError(f"List file does not exist: {list_file}")
 
-        db_features = np.load(feat_file).astype(np.float32)
-        with open(list_file, 'r', encoding='utf-8') as f:
-            db_paths = [line.strip() for line in f if line.strip()]
+        # 2. Vector cache
+        cached = VectorCache.get(project_path, strategy_name)
+        if cached is None:
+            log("Vector cache miss. Loading from disk...")
+            load_time, n_imgs, dim = VectorCache.preload(project_path, strategy_name, feat_file, list_file)
+            cached = VectorCache.get(project_path, strategy_name)
+            log(f"Vector cache loaded: {n_imgs} images, dim={dim}, load_time={load_time:.3f}s")
+        else:
+            log("Vector cache HIT. Using in-memory vectors.")
 
-        if len(db_features) != len(db_paths):
-            raise ValueError(f"Feature count ({len(db_features)}) does not match path count ({len(db_paths)})")
+        db_features_normed, db_paths, db_norms = cached
 
-        log(f"Index loaded: {len(db_paths)} images, dimension {db_features.shape[1]}")
+        if len(db_features_normed) != len(db_paths):
+            raise ValueError(f"Feature count ({len(db_features_normed)}) != path count ({len(db_paths)})")
 
-        # 2. Read model path
+        log(f"Index ready: {len(db_paths)} images, dimension {db_features_normed.shape[1]}")
+
+        # 3. Read model config
         config_file = proj / 'project_config.json'
         model_path = None
+        input_size = 224
+        resize_before_crop = 256
         if config_file.exists():
             with open(config_file, 'r', encoding='utf-8') as f:
                 cfg = json.load(f)
                 model_cfg = cfg.get('model', {})
                 model_path = model_cfg.get('model_path')
-                input_size=cfg.get('input_size',224)
-                resize_before_crop=cfg.get('resize_before_crop',256)
+                input_size = cfg.get('input_size', 224)
+                resize_before_crop = cfg.get('resize_before_crop', 256)
 
-        # 3. Load full model (keep fc for GradCAM)
+        # 4. Load model
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         log(f"Using device: {device}")
 
@@ -251,10 +281,17 @@ def retrieval_worker(
             log(f"WARNING: Model weights not found, using random initialization", "WARNING")
 
         model = model.to(device).eval()
-        target_layer = model.layer4[2].conv3
-        grad_cam = GradCAM(model, target_layer)
 
-        # 4. Extract query features
+        # GradCAM setup only if enabled
+        grad_cam = None
+        if enable_gradcam:
+            target_layer = model.layer4[2].conv3
+            grad_cam = GradCAM(model, target_layer)
+            log("GradCAM enabled")
+        else:
+            log("GradCAM disabled (fast retrieval mode)")
+
+        # 5. Extract query features
         query_img_pil = Image.open(query_image_path).convert('RGB')
         query_tensor = transform(query_img_pil).unsqueeze(0).to(device)
 
@@ -292,27 +329,34 @@ def retrieval_worker(
         query_feat = query_feat / (np.linalg.norm(query_feat, axis=1, keepdims=True) + 1e-8)
         query_feat = query_feat[0]
 
-        # 5. Query image GradCAM
-        with torch.no_grad():
-            logits = model(query_tensor)
-            pred_class = int(logits.argmax(dim=1).item())
-        query_cam, _ = grad_cam.generate_cam(query_tensor, target_category=pred_class)
-        log(f"Query image predicted class index: {pred_class}")
+        # Query GradCAM only if enabled
+        query_cam = None
+        if enable_gradcam:
+            with torch.no_grad():
+                logits = model(query_tensor)
+                pred_class = int(logits.argmax(dim=1).item())
+            query_cam, _ = grad_cam.generate_cam(query_tensor, target_category=pred_class)
+            log(f"Query image predicted class index: {pred_class}")
+        else:
+            log("Query feature extracted (no GradCAM)")
 
-        # 6. Retrieval ranking
-        similarities = np.dot(db_features, query_feat)
-        top_indices = np.argsort(similarities)[::-1][:top_k]
-        log(f"Retrieval complete, returning Top-{top_k}")
+        # 6. Retrieval ranking (fast in-memory)
+        retrieval_start = time.time()
+        similarities = np.dot(db_features_normed, query_feat)
 
-        # 7. Result processing + GradCAM
-        results_dir = res_dir / 'gradcam'
-        results_dir.mkdir(exist_ok=True)
+        if top_k < len(similarities):
+            top_indices = np.argpartition(-similarities, top_k)[:top_k]
+            top_indices = top_indices[np.argsort(-similarities[top_indices])]
+        else:
+            top_indices = np.argsort(-similarities)
 
-        _, query_heatmap, query_overlay = visualize_cam_on_image(query_img_pil, query_cam)
-        cv2.imwrite(str(results_dir / "query_heatmap.jpg"),
-                    cv2.cvtColor(query_heatmap, cv2.COLOR_RGB2BGR))
-        cv2.imwrite(str(results_dir / "query_overlay.jpg"),
-                    cv2.cvtColor(query_overlay, cv2.COLOR_RGB2BGR))
+        retrieval_time = time.time() - retrieval_start
+        log(f"Retrieval ranking complete in {retrieval_time*1000:.2f}ms (Top-{top_k})")
+
+        # 7. Result processing
+        results_dir = res_dir / 'gradcam' if enable_gradcam else res_dir
+        if enable_gradcam:
+            results_dir.mkdir(exist_ok=True)
 
         retrieved_info = []
         output_results = []
@@ -328,44 +372,47 @@ def retrieval_worker(
 
             log(f"Top{rank}: {img_path} | Similarity: {score:.4f}")
 
-            try:
-                img_pil = Image.open(img_path)
-                if img_pil.mode != 'RGB':
-                    img_pil = img_pil.convert('RGB')
-                img_tensor = transform(img_pil).unsqueeze(0).to(device)
+            if enable_gradcam and grad_cam is not None:
+                try:
+                    img_pil = Image.open(img_path)
+                    if img_pil.mode != 'RGB':
+                        img_pil = img_pil.convert('RGB')
+                    img_tensor = transform(img_pil).unsqueeze(0).to(device)
 
+                    with torch.no_grad():
+                        logits = model(img_tensor)
+                        pred_class = int(logits.argmax(dim=1).item())
+                    cam, _ = grad_cam.generate_cam(img_tensor, target_category=pred_class)
 
-                with torch.no_grad():
-                    logits = model(img_tensor)
-                    pred_class = int(logits.argmax(dim=1).item())
-                cam, _ = grad_cam.generate_cam(img_tensor, target_category=pred_class)
+                    original, heatmap, overlay = visualize_cam_on_image(img_pil, cam)
 
-                original, heatmap, overlay = visualize_cam_on_image(img_pil, cam)
+                    cam_subdir = results_dir / f"top{rank}_{Path(img_path).stem}"
+                    cam_subdir.mkdir(exist_ok=True)
+                    cv2.imwrite(str(cam_subdir / "original.jpg"),
+                                cv2.cvtColor(original, cv2.COLOR_RGB2BGR))
+                    cv2.imwrite(str(cam_subdir / "heatmap.jpg"),
+                                cv2.cvtColor(heatmap, cv2.COLOR_RGB2BGR))
+                    cv2.imwrite(str(cam_subdir / "overlay.jpg"),
+                                cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
 
-                cam_subdir = results_dir / f"top{rank}_{Path(img_path).stem}"
-                cam_subdir.mkdir(exist_ok=True)
-                cv2.imwrite(str(cam_subdir / "original.jpg"),
-                            cv2.cvtColor(original, cv2.COLOR_RGB2BGR))
-                cv2.imwrite(str(cam_subdir / "heatmap.jpg"),
-                            cv2.cvtColor(heatmap, cv2.COLOR_RGB2BGR))
-                cv2.imwrite(str(cam_subdir / "overlay.jpg"),
-                            cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
+                    retrieved_info.append({'path': img_path, 'cam': cam, 'score': score})
+                    output_results.append((img_path, score, str(cam_subdir)))
 
-                retrieved_info.append({'path': img_path, 'cam': cam, 'score': score})
-                output_results.append((img_path, score, str(cam_subdir)))
-
-            except Exception as e:
-                log(f"Top{rank} GradCAM failed: {e}", "WARNING")
+                except Exception as e:
+                    log(f"Top{rank} GradCAM failed: {e}", "WARNING")
+                    output_results.append((img_path, score, None))
+            else:
                 output_results.append((img_path, score, None))
 
-        # 8. Comparison overview
-        if retrieved_info:
+        # Comparison overview only if GradCAM enabled
+        if enable_gradcam and retrieved_info and query_cam is not None:
             comp_path = results_dir / "comparison_overview.png"
             create_comparison_figure(
                 query_image_path, query_cam, retrieved_info,
                 str(comp_path), log_callback=log
             )
-        # ===== New: Save CSV results using pandas =====
+
+        # Save CSV
         csv_path = res_dir / "retrieval_results.csv"
         try:
             df = pd.DataFrame({
@@ -377,8 +424,6 @@ def retrieval_worker(
             log(f"Retrieval results CSV saved: {csv_path}")
         except Exception as e:
             log(f"Failed to save CSV: {e}", "WARNING")
-        # ===========================================
-
 
         log(f"Retrieval data saved in {res_dir}")
         elapsed = time.time() - start_time
@@ -393,7 +438,6 @@ def retrieval_worker(
         return []
 
     finally:
-
         log(None)
 
 
@@ -412,6 +456,7 @@ def retrieval_process(cfg: dict, log_q: MPQueue, result_q: MPQueue):
             query_image_path=cfg['query_image_path'],
             top_k=cfg.get('top_k', 5),
             strategy_name=cfg.get('strategy_name', 'avgpool_2048'),
+            enable_gradcam=cfg.get('enable_gradcam', False),  # NEW
             log_q=adapter
         )
         result_q.put(results)

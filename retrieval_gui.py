@@ -3,14 +3,15 @@ import os
 import sys
 import json
 import datetime
+import time
 from pathlib import Path
 from typing import Optional, List, Tuple
 from multiprocessing import Process, Queue
 
 from PySide6.QtWidgets import (
-    QWidget, QFileDialog, QMessageBox, QLabel, QVBoxLayout,
+    QApplication, QWidget, QFileDialog, QMessageBox, QLabel, QVBoxLayout,
     QHBoxLayout, QPushButton, QLineEdit, QComboBox, QTextEdit,
-    QGroupBox
+    QGroupBox, QCheckBox
 )
 from PySide6.QtCore import Qt, QObject, Signal, Slot, QTimer
 from PySide6.QtGui import QPixmap, QImage
@@ -18,7 +19,7 @@ from PIL import Image
 import numpy as np
 
 from ui_retrieval import Ui_RetrievalWindow
-from retrieval_worker import retrieval_process
+from retrieval_worker import retrieval_process, VectorCache
 
 
 class RetrievalManager(QObject):
@@ -53,7 +54,6 @@ class RetrievalManager(QObject):
         if self.log_q is None:
             return
 
-
         while not self.log_q.empty():
             try:
                 msg = self.log_q.get_nowait()
@@ -61,10 +61,8 @@ class RetrievalManager(QObject):
                 if msg is None:
                     self.timer.stop()
 
-
                     if self.proc is not None and self.proc.is_alive():
                         self.proc.join(timeout=2)
-
 
                     results = []
                     try:
@@ -96,16 +94,13 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
         super().__init__(parent)
         self.setupUi(self)
 
-
         self.current_project_path: Optional[str] = None
         self.current_query_path: Optional[str] = None
         self.last_results: Optional[List[Tuple[str, float, Optional[str]]]] = None
 
-
         self.retrieval_mgr = RetrievalManager(self)
         self.retrieval_mgr.log.connect(self._on_log_received)
         self.retrieval_mgr.finished.connect(self._on_retrieval_finished)
-
 
         self.result_labels = [
             (self.label_result_1, self.label_score_1),
@@ -155,7 +150,7 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
         self._log(f"[DONE] Retrieved {len(results)} results")
 
     def _on_load_project(self):
-        """Load project folder (adapted for dual-strategy indexing)"""
+        """Load project folder and preload vectors into memory cache."""
         folder = QFileDialog.getExistingDirectory(
             self, "Select Project Folder", "",
             QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks
@@ -177,7 +172,6 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
         with open(config_file, 'r', encoding='utf-8') as f:
             cfg = json.load(f)
 
-        # Get results directory
         results_dir_str = cfg.get('results')
         if not results_dir_str:
             QMessageBox.warning(self, "Invalid Config", "Missing 'results' path in config.")
@@ -185,7 +179,6 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
 
         results_dir = Path(results_dir_str)
 
-        # Read manifest to check both strategy indexes
         manifest_file = results_dir / 'manifest.json'
         if not manifest_file.exists():
             self._log("Warning: No manifest found. Please build index first.", "WARNING")
@@ -199,7 +192,6 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
         total_images = manifest.get('total_images', 0)
         all_ready = True
 
-        # Check two fixed strategies
         for s_name in ('avgpool_2048', 'layer4_gem_2048'):
             s_info = manifest.get('strategies', {}).get(s_name)
             if not s_info:
@@ -227,6 +219,21 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
             )
         else:
             self._log(f"Dual-strategy indexes all ready, total {total_images} images")
+            self._log("Preloading vectors into memory cache...")
+            preload_start = time.time()
+            for s_name in ('avgpool_2048', 'layer4_gem_2048'):
+                s_info = manifest['strategies'][s_name]
+                feat_file = s_info['features_file']
+                list_file = s_info['list_file']
+                try:
+                    load_time, n, dim = VectorCache.preload(
+                        str(project_path), s_name, feat_file, list_file
+                    )
+                    self._log(f"  [{s_name}] Cache loaded: {n} images, dim={dim}, time={load_time:.3f}s")
+                except Exception as e:
+                    self._log(f"  [{s_name}] Cache preload failed: {e}", "WARNING")
+            total_preload = time.time() - preload_start
+            self._log(f"All vectors cached in memory, total preload time: {total_preload:.3f}s")
 
     def _on_select_query(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -251,10 +258,7 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
 
     def _load_image_pixmap(self, path: str, size: Tuple[int, int]) -> Optional[QPixmap]:
         try:
-
             img = Image.open(path)
-
-
             if img.mode not in ('RGB', 'L'):
                 img = img.convert('RGB')
             elif img.mode == 'L':
@@ -267,7 +271,6 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
             return pixmap
 
         except Exception as e:
-
             try:
                 pixmap = QPixmap(path)
                 if not pixmap.isNull():
@@ -277,21 +280,6 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
 
             self._log(f"Error loading image {path}: {e}")
             return None
-
-    #
-    # def _load_image_pixmap(self, path: str, size: Tuple[int, int]) -> Optional[QPixmap]:
-
-    #     try:
-    #         img = Image.open(path).convert('RGB')
-    #         img.thumbnail(size, Image.Resampling.LANCZOS)
-    #
-    #         data = img.tobytes("raw", "RGB")
-    #         qim = QImage(data, img.width, img.height, img.width * 3, QImage.Format_RGB888)
-    #         pixmap = QPixmap.fromImage(qim)
-    #         return pixmap
-    #     except Exception as e:
-    #         self._log(f"Error loading image {path}: {e}")
-    #         return None
 
     def _display_results(self, results: List[Tuple[str, float, Optional[str]]]):
         self._clear_results()
@@ -303,7 +291,6 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
                 break
 
             img_label, score_label = self.result_labels[i]
-
 
             if len(result) >= 3:
                 img_path, score, cam_dir = result[0], result[1], result[2]
@@ -339,18 +326,27 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
 
         top_k = int(self.combo_topk.currentText())
         method = self.combo_method.currentText()
+        enable_gradcam = self.check_gradcam.isChecked()  # NEW
 
         cfg = {
             "project_path": self.current_project_path,
             "query_image_path": self.current_query_path,
             "top_k": top_k,
             "strategy_name": method,
+            "enable_gradcam": enable_gradcam,  # NEW
         }
 
         self.btn_start_retrieval.setEnabled(False)
         self.btn_start_retrieval.setText("Retrieving...")
         self.text_log.clear()
         self._log(f"[START] Launching retrieval process...")
+        self._log(f"GradCAM: {'ON' if enable_gradcam else 'OFF (fast mode)'}")
+
+        cached = VectorCache.get(self.current_project_path, method)
+        if cached is not None:
+            self._log("Vector cache: HIT (in-memory)")
+        else:
+            self._log("Vector cache: MISS (will load from disk)")
 
         self.retrieval_mgr.start_retrieval(cfg)
 
