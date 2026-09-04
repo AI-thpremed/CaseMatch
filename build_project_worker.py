@@ -26,21 +26,20 @@ class TqdmToLog:
 
 def get_app_path():
     if getattr(sys, 'frozen', False):
-        # PyInstaller 打包后，exe 所在目录
         return Path(sys.executable).parent
     else:
-        # 开发环境，返回当前文件所在目录的父目录（或项目根目录）
+
         return Path(__file__).parent
 
 
 def safe_write(msg):
     try:
         if getattr(sys, 'frozen', False) and (sys.stdout is None or sys.stderr is None):
-            return  # 打包后的 GUI 应用，没有控制台
+            return
         from tqdm import tqdm
         tqdm.write(msg)
     except (AttributeError, ImportError, TypeError):
-        # 开发环境也可能没有 tqdm，静默处理
+
         pass
 
 

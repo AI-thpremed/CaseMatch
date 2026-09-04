@@ -112,7 +112,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
 if __name__ == "__main__":
     import multiprocessing
-    multiprocessing.freeze_support()  # ← 添加这一行
+    multiprocessing.freeze_support()
 
     sys.excepthook = handle_exception
 
