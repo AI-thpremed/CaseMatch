@@ -120,8 +120,40 @@ These executable files have integrated the required PyTorch versions, so they ca
 
 
 
+##  Requirements
 
 
+- **Python**: 3.8 or higher
+- **OS**: Windows 10/11 (executable); Linux / macOS / Windows (source)
+
+Create a `requirements.txt` in the project root with the following dependencies:
+
+```txt
+matplotlib==3.11.1
+numpy==1.24.3
+opencv-python==4.8.1.78
+pandas==3.0.5
+Pillow==12.3.0
+PySide6==6.9.1
+scikit-learn==1.9.0
+torch==1.13.1
+torchvision==0.14.1
+tqdm==4.62.3
+```
+
+Note: PySide6_Addons and PySide6_Essentials are installed automatically as sub-packages of PySide6 and do not need to be listed separately.
+Install all dependencies via:
+pip install -r requirements.txt
+
+
+##  Methodology
+
+CaseMatch adopts ResNet50 as the core visual feature extractor. During index construction, images are resized to 224 × 224 pixels and normalized using ImageNet mean and standard deviation. The system supports two feature aggregation strategies: global average pooling (AvgPool) for holistic semantic embeddings, and Stage 4 Generalized Mean Pooling (Layer4+GeM, p = 3) for local discriminative regions. Cosine similarity is employed as the distance metric for nearest-neighbor search. Incremental index updates are performed by comparing file modification timestamps and extracting features only for newly added or changed images.
+
+
+
+For detailed step-by-step instructions on data preparation, index construction, model selection, retrieval operations, and Grad-CAM visualization, please refer to the user guide:
+user_guide/CaseMatch_V1_0_0_User_Guide.pdf
 
 
 ## Rebuild the Software
