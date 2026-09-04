@@ -120,6 +120,9 @@ These executable files have integrated the required PyTorch versions, so they ca
 
 
 
+
+
+
 ##  Requirements
 
 
@@ -159,6 +162,30 @@ user_guide/CaseMatch_V1_0_0_User_Guide.pdf
 ## Rebuild the Software
 
 use pyinstaller to build the exe Software
+
+
+## Usage Instructions
+
+### Option 1: Pre-built Executable (Recommended)
+
+1. Download the appropriate version for your hardware:
+   - **CPU Version**: For systems without a dedicated NVIDIA GPU.
+   - **GPU Version**: For systems with an NVIDIA GPU and CUDA support.
+2. Extract the ZIP archive to your local drive.
+3. Double-click `CaseMatch.exe` to launch the application.
+4. Follow the on-screen prompts to create a new project, build the image index, and perform retrieval.
+
+> For detailed step-by-step instructions—including project creation, index building, model selection, retrieval operations, and Grad-CAM visualization—please refer to the user guide: `user_guide/CaseMatch_V1_0_0_User_Guide.pdf`.
+
+### Option 2: Run from Source
+
+1. Clone or download this repository.
+2. Install the required dependencies:
+3. Launch the application:
+python main.py
+Detailed operational workflows and interface guidance are provided in the user guide: user_guide/CaseMatch_V1_0_0_User_Guide.pdf.
+
+
 
 
 ## License & Contribution Guidelines
