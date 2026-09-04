@@ -333,7 +333,7 @@ class RetrievalWindow(QWidget, Ui_RetrievalWindow):
             "query_image_path": self.current_query_path,
             "top_k": top_k,
             "strategy_name": method,
-            "enable_gradcam": enable_gradcam,  # NEW
+            "enable_gradcam": enable_gradcam,
         }
 
         self.btn_start_retrieval.setEnabled(False)

@@ -25,7 +25,6 @@ class TqdmToLog:
         pass
 
 def get_app_path():
-    """获取应用程序的根目录（开发环境返回项目目录，打包环境返回exe所在目录）"""
     if getattr(sys, 'frozen', False):
         # PyInstaller 打包后，exe 所在目录
         return Path(sys.executable).parent
@@ -35,7 +34,6 @@ def get_app_path():
 
 
 def safe_write(msg):
-    """安全的控制台写入，在打包后的 GUI 应用中自动禁用"""
     try:
         if getattr(sys, 'frozen', False) and (sys.stdout is None or sys.stderr is None):
             return  # 打包后的 GUI 应用，没有控制台
@@ -55,10 +53,8 @@ def build_project(cfg: dict, log_q):
       2. layer4_gem_2048 - Deep local features + saliency pooling (2048-D)
     No PCA, no sample limit, applicable to all datasets.
     """
-
     log_file = None
 
-    # 然后在 log 函数中使用：
     def log(msg, level="INFO"):
         nonlocal log_file
         if msg is None:

@@ -456,7 +456,7 @@ def retrieval_process(cfg: dict, log_q: MPQueue, result_q: MPQueue):
             query_image_path=cfg['query_image_path'],
             top_k=cfg.get('top_k', 5),
             strategy_name=cfg.get('strategy_name', 'avgpool_2048'),
-            enable_gradcam=cfg.get('enable_gradcam', False),  # NEW
+            enable_gradcam=cfg.get('enable_gradcam', False),
             log_q=adapter
         )
         result_q.put(results)

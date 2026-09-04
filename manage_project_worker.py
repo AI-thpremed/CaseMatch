@@ -56,7 +56,7 @@ def update_worker(project_path: str, log_q: Queue):
             log_file.write(msg + '\n')
             log_file.flush()
 
-        safe_write(msg)  # 替代原来的 tqdm.write(msg)
+        safe_write(msg)
 
     try:
         log("Starting incremental update...")
