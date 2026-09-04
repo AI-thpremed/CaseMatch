@@ -97,8 +97,10 @@ CaseMatch/
 ├── retrieval_gui.py            # GUI interaction layer for retrieval and visualization  
 ├── CPKs/                       # Pretrained model checkpoints  
 ├── UI/                         # Original UI layout files  
+├── requirements.txt            # requirement file 
 ├── models/                     # ResNet backbone implementations (PyTorch)  
 └── user_guide/                 # User guide documentation (PDF)
+
 ### Executable Files
 
 Pyinstaller is recommended for packaging Python applications into standalone executable files.
